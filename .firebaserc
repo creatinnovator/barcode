@@ -1,0 +1,8 @@
+{
+  "projects": {
+    "default": "barcode-45737",
+    "barcode-sample": "barcode-45737"
+  },
+  "targets": {},
+  "etags": {}
+}

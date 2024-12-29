@@ -1,0 +1,27 @@
+{
+    "name": "barcode",
+    "image": "mcr.microsoft.com/devcontainers/typescript-node:22-bullseye",
+    "customizations": {
+      "vscode": {
+        "extensions": [
+          "dbaeumer.vscode-eslint",
+          "esbenp.prettier-vscode",
+          "github.copilot",
+          "eamodio.gitlens",
+          "streetsidesoftware.code-spell-checker",
+          "redhat.vscode-xml"
+        ],
+        "settings": {
+          "tabSize": 2,
+          "editor.defaultFormatter": "esbenp.prettier-vscode",
+          "editor.rulers": [80],
+          "editor.wordWrapColumn": 80,
+          "editor.formatOnSave": true
+        }
+      }
+    },
+    "mounts": [
+      "type=bind,source=${localEnv:HOME}/.ssh,target=/home/node/.ssh,readonly"
+    ],
+    "postCreateCommand": "chmod +x .devcontainer/setup.sh && ./.devcontainer/setup.sh"
+  }
