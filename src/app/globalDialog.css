@@ -1,0 +1,10 @@
+.MuiDialog-paper {
+  background: var(--background);
+  color: var(--foreground);
+  border: 1px solid var(--foreground);
+  border-radius: 0.5rem;
+}
+
+.textfield {
+  padding: 10px 0;
+}
