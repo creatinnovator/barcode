@@ -1,7 +1,7 @@
 "use client";
 
 import InventoryItem from "@/components/InventoryItem";
-import Scanner from "@/components/Scanner";
+import ScannerDialog from "@/components/ScannerDialog";
 import InventoryItemModel from "@/models/InventoryItem";
 import { InventoryItems } from "@/models/sample";
 import {
@@ -154,39 +154,11 @@ const Page = () => {
             alignItems: "center",
           }}
         >
-          <div
-            style={{
-              position: "relative",
-              width: "100%",
-              maxWidth: "600px",
-              border: "1px solid #ccc",
-              backgroundColor: "#fff",
-            }}
-          >
-            <Scanner
-              opened={scannerOpen}
-              onSuccess={(result) => {
-                handleScannerSuccess(result);
-              }}
-              onError={(error) => {
-                console.log(error);
-              }}
-            />
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                padding: "10px",
-              }}
-            >
-              <Button onClick={handleManualEntryOpen} variant="contained">
-                Manual input
-              </Button>
-              <Button onClick={handleScannerClose} variant="outlined">
-                Close
-              </Button>
-            </div>
-          </div>
+          <ScannerDialog
+            onClose={handleScannerClose}
+            onSuccess={handleScannerSuccess}
+            onManualEntryOpen={handleManualEntryOpen}
+          />
         </div>
       )}
 

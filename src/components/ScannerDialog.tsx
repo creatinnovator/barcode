@@ -1,44 +1,96 @@
-import React from "react";
-import {
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Button,
-} from "@mui/material";
+import React, { useCallback, useState } from "react";
+import { Button } from "@mui/material";
 import Scanner from "./Scanner";
 
 interface ScannerDialogProps {
-  open: boolean;
+  onManualEntryOpen: () => void;
   onClose: () => void;
   onSuccess: (data: string) => void;
-  onError: (error: string) => void;
+  onError?: (error: string) => void;
 }
 
 const ScannerDialog: React.FC<ScannerDialogProps> = ({
-  open,
   onClose,
   onSuccess,
   onError,
+  onManualEntryOpen,
 }) => {
+  const [scannerOpen, setScannerOpen] = useState(true);
+
+  const handleScannerSuccess = useCallback(
+    (result: string) => {
+      onSuccess(result);
+      setScannerOpen(false);
+    },
+    [onSuccess]
+  );
+
+  const handleScannerError = useCallback(
+    (error: string) => {
+      console.error(error);
+      if (!onError) {
+        return;
+      }
+      onError(error);
+    },
+    [onError]
+  );
+
+  const handleManualEntryOpen = useCallback(() => {
+    setScannerOpen(false);
+    onManualEntryOpen();
+  }, [onManualEntryOpen]);
+
+  const handleScannerClose = useCallback(() => {
+    setScannerOpen(false);
+    onClose();
+  }, [onClose]);
+
   return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      sx={{
+    <div
+      style={{
+        position: "absolute",
+        top: 0,
+        left: 0,
+        padding: "5px",
         width: "100%",
+        height: "100%",
+        backgroundColor: "rgba(0, 0, 0, 0.5)",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
       }}
     >
-      <DialogTitle>Scan Barcode</DialogTitle>
-      <DialogContent>
-        <Scanner onSuccess={onSuccess} onError={onError} />
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose} color="primary">
-          Close
-        </Button>
-      </DialogActions>
-    </Dialog>
+      <div
+        style={{
+          position: "relative",
+          width: "100%",
+          maxWidth: "600px",
+          border: "1px solid #ccc",
+          backgroundColor: "#fff",
+        }}
+      >
+        <Scanner
+          opened={scannerOpen}
+          onSuccess={handleScannerSuccess}
+          onError={handleScannerError}
+        />
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            padding: "10px",
+          }}
+        >
+          <Button onClick={handleManualEntryOpen} variant="contained">
+            Manual input
+          </Button>
+          <Button onClick={handleScannerClose} variant="outlined">
+            Close
+          </Button>
+        </div>
+      </div>
+    </div>
   );
 };
 

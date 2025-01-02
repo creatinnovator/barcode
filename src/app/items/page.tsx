@@ -9,11 +9,11 @@ import {
   Button,
   TextField,
 } from "@mui/material";
-import Scanner from "@/components/Scanner";
 import "../globalDialog.css";
 import InventoryItemModel from "@/models/InventoryItem";
 import InventoryItem from "@/components/InventoryItem";
 import { InventoryItems } from "@/models/sample";
+import ScannerDialog from "@/components/ScannerDialog";
 
 const items = InventoryItems;
 
@@ -110,54 +110,11 @@ export default function ItemsPage() {
       </ul>
 
       {scannerOpen && (
-        <div
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            padding: "5px",
-            width: "100%",
-            height: "100%",
-            backgroundColor: "rgba(0, 0, 0, 0.5)",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
-          <div
-            style={{
-              position: "relative",
-              width: "100%",
-              maxWidth: "600px",
-              border: "1px solid #ccc",
-              backgroundColor: "#fff",
-            }}
-          >
-            <Scanner
-              opened={scannerOpen}
-              onSuccess={(result) => {
-                handleScannerSuccess(result);
-              }}
-              onError={(error) => {
-                console.log(error);
-              }}
-            />
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                padding: "10px",
-              }}
-            >
-              <Button onClick={handleManualEntryOpen} variant="contained">
-                Manual input
-              </Button>
-              <Button onClick={handleScannerClose} variant="outlined">
-                Close
-              </Button>
-            </div>
-          </div>
-        </div>
+        <ScannerDialog
+          onClose={handleScannerClose}
+          onSuccess={handleScannerSuccess}
+          onManualEntryOpen={handleManualEntryOpen}
+        />
       )}
 
       <Dialog open={manualEntryOpen} onClose={handleManualEntryClose}>
