@@ -1,7 +1,9 @@
 "use client";
 
+import InventoryItem from "@/components/InventoryItem";
 import Scanner from "@/components/Scanner";
-import InventoryItem from "@/models/InventoryItem";
+import InventoryItemModel from "@/models/InventoryItem";
+import { InventoryItems } from "@/models/sample";
 import {
   Button,
   Dialog,
@@ -9,24 +11,21 @@ import {
   DialogContent,
   DialogTitle,
   TextField,
-  Typography,
 } from "@mui/material";
 import { useCallback, useEffect, useState } from "react";
 
-interface DispatchItem extends InventoryItem {
+interface DispatchItem extends InventoryItemModel {
   quantityToDispatch: number;
 }
 
-const items: InventoryItem[] = [
-  { id: "1", name: "Item 1", description: "Description 1", quantity: 10 },
-  { id: "2", name: "Item 2", description: "Description 2", quantity: 5 },
+const items: InventoryItemModel[] = [
   {
     id: "0036000291452",
-    name: "0036000291452",
-    description: "0036000291452",
+    name: "Product XXX",
+    description: "Sample product with barcode",
     quantity: 5,
   },
-];
+].concat(InventoryItems);
 
 const removeItems = (id: string, quantity: number) => {
   items.forEach((item) => {
@@ -135,18 +134,7 @@ const Page = () => {
       <ul className="item-list">
         {items.map((item) => (
           <li key={item.id} className="item">
-            <h3>{item.name}</h3>
-            <p>{item.description}</p>
-            <p>
-              <Typography variant="caption">Quantity</Typography>
-              <span
-                style={{
-                  paddingLeft: "5px",
-                }}
-              >
-                {item.quantity}
-              </span>
-            </p>
+            <InventoryItem item={item} />
           </li>
         ))}
       </ul>
@@ -170,6 +158,7 @@ const Page = () => {
             style={{
               position: "relative",
               width: "100%",
+              maxWidth: "600px",
               border: "1px solid #ccc",
               backgroundColor: "#fff",
             }}

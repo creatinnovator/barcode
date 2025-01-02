@@ -66,7 +66,8 @@ const Scanner = ({ onSuccess, onError, opened }: ScannerProps) => {
         errorMessage.includes("No barcode or QR code detected") ||
         errorMessage.includes(
           "No MultiFormat Readers were able to detect the code"
-        )
+        ) ||
+        errorMessage.includes("QR code parse error")
       ) {
         return;
       }

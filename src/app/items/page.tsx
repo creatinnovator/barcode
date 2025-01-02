@@ -8,21 +8,21 @@ import {
   DialogActions,
   Button,
   TextField,
-  Typography,
 } from "@mui/material";
 import Scanner from "@/components/Scanner";
 import "../globalDialog.css";
-import InventoryItem from "@/models/InventoryItem";
+import InventoryItemModel from "@/models/InventoryItem";
+import InventoryItem from "@/components/InventoryItem";
+import { InventoryItems } from "@/models/sample";
 
-const items: InventoryItem[] = [
-  { id: "1", name: "Item 1", description: "Description 1", quantity: 10 },
-  { id: "2", name: "Item 2", description: "Description 2", quantity: 5 },
-];
+const items = InventoryItems;
 
 export default function ItemsPage() {
   const [scannerOpen, setScannerOpen] = useState(false);
   const [manualEntryOpen, setManualEntryOpen] = useState(false);
-  const [newItem, setNewItem] = useState<InventoryItem>({} as InventoryItem);
+  const [newItem, setNewItem] = useState<InventoryItemModel>(
+    {} as InventoryItemModel
+  );
 
   const [quantityError, setQuantityError] = useState(false);
   const [valid, setValid] = useState(false);
@@ -104,18 +104,7 @@ export default function ItemsPage() {
       <ul className="item-list">
         {items.map((item) => (
           <li key={item.id} className="item">
-            <h3>{item.name}</h3>
-            <p>{item.description}</p>
-            <p>
-              <Typography variant="caption">Quantity</Typography>
-              <span
-                style={{
-                  paddingLeft: "5px",
-                }}
-              >
-                {item.quantity}
-              </span>
-            </p>
+            <InventoryItem item={item} />
           </li>
         ))}
       </ul>
@@ -139,6 +128,7 @@ export default function ItemsPage() {
             style={{
               position: "relative",
               width: "100%",
+              maxWidth: "600px",
               border: "1px solid #ccc",
               backgroundColor: "#fff",
             }}
@@ -238,7 +228,6 @@ export default function ItemsPage() {
         }
         .item {
           border: 1px solid #ccc;
-          padding: 10px;
           margin: 10px 0;
         }
       `}</style>

@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "T4G Barcode Scanner",
+  title: "My Inventory",
   description: "Sample application for barcode scanning and barcode generation",
 };
 
@@ -27,7 +27,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        <div style={{ display: "flex", justifyContent: "center" }}>
+          <div style={{ maxWidth: "800px", width: "100%" }}>{children}</div>
+        </div>
       </body>
     </html>
   );

@@ -26,3 +26,11 @@ body {
   border: 1px solid var(--foreground);
   border-radius: 0.5rem;
 }
+
+.product-id {
+  color: #666;
+}
+
+.label {
+  color: #666;
+}
