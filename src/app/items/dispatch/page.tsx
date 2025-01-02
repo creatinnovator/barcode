@@ -1,60 +1,77 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import Scanner from "@/components/Scanner";
+import InventoryItem from "@/models/InventoryItem";
 import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   TextField,
   Typography,
 } from "@mui/material";
-import Scanner from "@/components/Scanner";
-import "../globalDialog.css";
-import InventoryItem from "@/models/InventoryItem";
+import { useCallback, useEffect, useState } from "react";
+
+interface DispatchItem extends InventoryItem {
+  quantityToDispatch: number;
+}
 
 const items: InventoryItem[] = [
   { id: "1", name: "Item 1", description: "Description 1", quantity: 10 },
   { id: "2", name: "Item 2", description: "Description 2", quantity: 5 },
+  {
+    id: "0036000291452",
+    name: "0036000291452",
+    description: "0036000291452",
+    quantity: 5,
+  },
 ];
 
-export default function ItemsPage() {
+const removeItems = (id: string, quantity: number) => {
+  items.forEach((item) => {
+    if (item.id === id) {
+      item.quantity -= quantity;
+    }
+  });
+};
+
+const Page = () => {
   const [scannerOpen, setScannerOpen] = useState(false);
   const [manualEntryOpen, setManualEntryOpen] = useState(false);
-  const [newItem, setNewItem] = useState<InventoryItem>({} as InventoryItem);
-
+  const [dispatchItem, setDispatchItem] = useState<DispatchItem>(
+    {} as DispatchItem
+  );
   const [quantityError, setQuantityError] = useState(false);
   const [valid, setValid] = useState(false);
 
   useEffect(() => {
     if (
-      newItem.id &&
-      newItem.name &&
-      newItem.description &&
-      newItem.quantity &&
+      dispatchItem.id &&
+      dispatchItem.quantityToDispatch > 0 &&
       !quantityError
     ) {
       setValid(true);
     } else {
       setValid(false);
     }
-  }, [
-    newItem.id,
-    newItem.name,
-    newItem.description,
-    newItem.quantity,
-    quantityError,
-  ]);
+  }, [dispatchItem.id, dispatchItem.quantityToDispatch, quantityError]);
 
   const handleScannerOpen = useCallback(() => setScannerOpen(true), []);
   const handleScannerClose = useCallback(() => setScannerOpen(false), []);
 
   const handleManualEntryOpen = useCallback(() => {
-    setNewItem({ id: "", name: "", description: "", quantity: 1 });
+    setDispatchItem({
+      id: "",
+      name: "",
+      description: "",
+      quantity: 0,
+      quantityToDispatch: 1,
+    });
     setScannerOpen(false);
     setManualEntryOpen(true);
   }, []);
+
   const handleManualEntryClose = useCallback(
     () => setManualEntryOpen(false),
     []
@@ -63,16 +80,25 @@ export default function ItemsPage() {
   const handleInputChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const { name, value } = e.target;
-      if (name === "quantity") {
+
+      let item = dispatchItem;
+
+      if (name === "id") {
+        const inventory = items.find((item) => item.id === value);
+        if (inventory) {
+          item = { ...inventory, quantityToDispatch: 1 };
+        }
+      }
+      if (name === "quantityToDispatch") {
         if (parseInt(value, 10) < 1) {
           setQuantityError(true);
         } else {
           setQuantityError(false);
         }
       }
-      setNewItem({ ...newItem, [name]: value });
+      setDispatchItem({ ...item, [name]: value });
     },
-    [newItem]
+    [dispatchItem]
   );
 
   const handleSave = useCallback(() => {
@@ -81,11 +107,16 @@ export default function ItemsPage() {
     }
 
     setManualEntryOpen(false);
-    items.push(newItem);
-  }, [newItem, valid]);
+    removeItems(dispatchItem.id, dispatchItem.quantityToDispatch);
+  }, [dispatchItem, valid]);
 
   const handleScannerSuccess = useCallback((result: string) => {
-    setNewItem({ id: result, name: "", description: "", quantity: 1 });
+    const item = items.find((item) => item.id === result);
+    if (!item) {
+      alert("Item not found");
+      return;
+    }
+    setDispatchItem({ ...item, quantityToDispatch: 1 });
 
     setScannerOpen(false);
     setManualEntryOpen(true);
@@ -99,7 +130,7 @@ export default function ItemsPage() {
         onClick={handleScannerOpen}
         className="add-button"
       >
-        Add
+        Dispatch
       </Button>
       <ul className="item-list">
         {items.map((item) => (
@@ -171,12 +202,12 @@ export default function ItemsPage() {
       )}
 
       <Dialog open={manualEntryOpen} onClose={handleManualEntryClose}>
-        <DialogTitle>New Product</DialogTitle>
+        <DialogTitle>Item to dispatch </DialogTitle>
         <DialogContent>
           <TextField
             label="Product ID"
             name="id"
-            value={newItem.id}
+            value={dispatchItem.id}
             onChange={handleInputChange}
             fullWidth
             sx={{
@@ -184,9 +215,10 @@ export default function ItemsPage() {
             }}
           />
           <TextField
+            disabled
             label="Name"
             name="name"
-            value={newItem.name}
+            value={dispatchItem.name}
             onChange={handleInputChange}
             fullWidth
             sx={{
@@ -194,9 +226,23 @@ export default function ItemsPage() {
             }}
           />
           <TextField
+            disabled
             label="Description"
             name="description"
-            value={newItem.description}
+            value={dispatchItem.description}
+            onChange={handleInputChange}
+            fullWidth
+            sx={{
+              margin: "10px 0",
+            }}
+          />
+          <TextField
+            disabled
+            error={quantityError}
+            label="Quantity in stock"
+            name="quantity"
+            type="number"
+            value={dispatchItem.quantity}
             onChange={handleInputChange}
             fullWidth
             sx={{
@@ -205,10 +251,10 @@ export default function ItemsPage() {
           />
           <TextField
             error={quantityError}
-            label="Quantity"
-            name="quantity"
+            label="Quantity to dispatch"
+            name="quantityToDispatch"
             type="number"
-            value={newItem.quantity}
+            value={dispatchItem.quantityToDispatch}
             onChange={handleInputChange}
             fullWidth
             sx={{
@@ -219,7 +265,7 @@ export default function ItemsPage() {
         <DialogActions>
           <Button onClick={handleManualEntryClose}>Cancel</Button>
           <Button onClick={handleSave} disabled={!valid}>
-            Save
+            Dispatch
           </Button>
         </DialogActions>
       </Dialog>
@@ -244,4 +290,5 @@ export default function ItemsPage() {
       `}</style>
     </div>
   );
-}
+};
+export default Page;

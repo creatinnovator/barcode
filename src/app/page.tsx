@@ -27,7 +27,7 @@ export default function HomePage() {
         Items
       </Link>
       <Link
-        href="/items/checkout"
+        href="/items/dispatch"
         style={{
           margin: "10px",
           padding: "20px",
@@ -39,7 +39,7 @@ export default function HomePage() {
           width: "200px",
         }}
       >
-        Checkout
+        Dispatch
       </Link>
     </div>
   );
