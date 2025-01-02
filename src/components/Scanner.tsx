@@ -1,66 +1,96 @@
-import { useEffect, useRef } from "react";
+import { RefObject, useCallback, useEffect, useRef } from "react";
 import {
-  Html5QrcodeScanner,
-  Html5QrcodeScanType,
+  Html5Qrcode,
+  Html5QrcodeScannerState,
   QrcodeErrorCallback,
   QrcodeSuccessCallback,
 } from "html5-qrcode";
-import { Html5QrcodeScannerConfig } from "html5-qrcode/esm/html5-qrcode-scanner";
 
 interface ScannerProps {
   onSuccess?: (result: string) => void;
   onError?: (error: string) => void;
+  opened?: boolean;
 }
 
-const Scanner = ({ onSuccess, onError }: ScannerProps) => {
-  const scanner = useRef<Html5QrcodeScanner | null>(null);
+let scanner: Html5Qrcode | undefined;
 
-  useEffect(() => {
-    scanner.current = new Html5QrcodeScanner(
-      "reader",
-      {
-        fps: 10,
-        disableFlip: false,
-        supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA],
-        showZoomSliderIfSupported: true,
-        aspectRatio: 2,
-        videoConstraints: {
-          advanced: [
-            {
-              facingMode: "environment",
-            },
-          ],
-        },
-      } as Html5QrcodeScannerConfig,
-      false
-    );
+const start = (
+  onSuccess: QrcodeSuccessCallback,
+  onError: QrcodeErrorCallback
+) => {
+  const config = {
+    verbose: false,
+    fps: 10,
+    qrbox: { width: 250, height: 250 },
+  };
+  scanner = new Html5Qrcode("reader");
 
-    const success: QrcodeSuccessCallback = (data: string) => {
+  scanner.start({ facingMode: "environment" }, config, onSuccess, onError);
+  return scanner;
+};
+
+const dispose = (scanner?: RefObject<Html5Qrcode | undefined>) => {
+  if (!scanner || !scanner.current) {
+    return;
+  }
+  const state = scanner.current?.getState();
+  if (state && state === Html5QrcodeScannerState.SCANNING) {
+    scanner.current.stop().then(() => scanner.current?.clear());
+  } else {
+    scanner.current?.clear();
+  }
+  scanner.current = undefined;
+};
+
+const Scanner = ({ onSuccess, onError, opened }: ScannerProps) => {
+  const scanner = useRef<Html5Qrcode | undefined>(undefined);
+  const success: QrcodeSuccessCallback = useCallback(
+    (data: string) => {
       if (!onSuccess) {
         return;
       }
 
+      dispose(scanner);
       onSuccess(data);
-    };
+    },
+    [onSuccess]
+  );
 
-    const error: QrcodeErrorCallback = (errorMessage: string) => {
+  const error: QrcodeErrorCallback = useCallback(
+    (errorMessage: string) => {
       if (!onError) {
         return;
       }
 
+      if (
+        errorMessage.includes("No barcode or QR code detected") ||
+        errorMessage.includes(
+          "No MultiFormat Readers were able to detect the code"
+        )
+      ) {
+        return;
+      }
+
       onError(errorMessage);
-    };
+    },
+    [onError]
+  );
 
-    scanner.current.render(success, error);
-
+  useEffect(() => {
+    if (scanner.current) {
+      return;
+    }
+    scanner.current = start(success, error);
     return () => {
-      scanner.current?.clear().catch((error: unknown) => {
-        console.error("Failed to clear scanner. ", error);
-      });
-    };
-  }, [onSuccess, onError]);
+      if (opened) {
+        return;
+      }
 
-  return <div id="reader" style={{ maxWidth: "500px" }} aria-hidden="false" />;
+      dispose(scanner);
+    };
+  }, [error, success, opened]);
+
+  return <div id="reader" style={{ maxWidth: "600px" }} aria-hidden="false" />;
 };
 
 export default Scanner;

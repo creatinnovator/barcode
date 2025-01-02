@@ -22,7 +22,13 @@ const ScannerDialog: React.FC<ScannerDialogProps> = ({
   onError,
 }) => {
   return (
-    <Dialog open={open} onClose={onClose}>
+    <Dialog
+      open={open}
+      onClose={onClose}
+      sx={{
+        width: "100%",
+      }}
+    >
       <DialogTitle>Scan Barcode</DialogTitle>
       <DialogContent>
         <Scanner onSuccess={onSuccess} onError={onError} />

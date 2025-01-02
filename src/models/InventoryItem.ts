@@ -1,5 +1,6 @@
 interface InventoryItem {
-  code: string;
+  id: string;
+  name: string;
   description: string;
   quantity: number;
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -12,22 +12,17 @@ import {
 } from "@mui/material";
 import Scanner from "@/components/Scanner";
 import "../globalDialog.css";
+import InventoryItem from "@/models/InventoryItem";
 
-const items = [
+const items: InventoryItem[] = [
   { id: "1", name: "Item 1", description: "Description 1", quantity: 10 },
   { id: "2", name: "Item 2", description: "Description 2", quantity: 5 },
-  // Add more items here
 ];
 
 export default function ItemsPage() {
   const [scannerOpen, setScannerOpen] = useState(false);
   const [manualEntryOpen, setManualEntryOpen] = useState(false);
-  const [newItem, setNewItem] = useState({
-    id: "",
-    name: "",
-    description: "",
-    quantity: 1,
-  });
+  const [newItem, setNewItem] = useState<InventoryItem>({} as InventoryItem);
 
   const [quantityError, setQuantityError] = useState(false);
   const [valid, setValid] = useState(false);
@@ -52,43 +47,49 @@ export default function ItemsPage() {
     quantityError,
   ]);
 
-  const handleScannerOpen = () => setScannerOpen(true);
-  const handleScannerClose = () => setScannerOpen(false);
+  const handleScannerOpen = useCallback(() => setScannerOpen(true), []);
+  const handleScannerClose = useCallback(() => setScannerOpen(false), []);
 
-  const handleManualEntryOpen = () => {
+  const handleManualEntryOpen = useCallback(() => {
+    setNewItem({ id: "", name: "", description: "", quantity: 1 });
     setScannerOpen(false);
     setManualEntryOpen(true);
-  };
-  const handleManualEntryClose = () => setManualEntryOpen(false);
+  }, []);
+  const handleManualEntryClose = useCallback(
+    () => setManualEntryOpen(false),
+    []
+  );
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    if (name === "quantity") {
-      if (value < 1) {
-        setQuantityError(true);
-      } else {
-        setQuantityError(false);
+  const handleInputChange = useCallback(
+    (e) => {
+      const { name, value } = e.target;
+      if (name === "quantity") {
+        if (value < 1) {
+          setQuantityError(true);
+        } else {
+          setQuantityError(false);
+        }
       }
-    }
-    setNewItem({ ...newItem, [name]: value });
-  };
+      setNewItem({ ...newItem, [name]: value });
+    },
+    [newItem]
+  );
 
-  const handleSave = () => {
+  const handleSave = useCallback(() => {
     if (!valid) {
       return;
     }
 
-    items.push(newItem);
     setManualEntryOpen(false);
-  };
+    items.push(newItem);
+  }, [newItem, valid]);
 
-  const handleScannerSuccess = (result: string) => {
-    // Handle scanner result here
-    newItem.id = result;
+  const handleScannerSuccess = useCallback((result: string) => {
+    setNewItem({ id: result, name: "", description: "", quantity: 1 });
 
     setScannerOpen(false);
     setManualEntryOpen(true);
-  };
+  }, []);
 
   return (
     <div className="container">
@@ -127,19 +128,58 @@ export default function ItemsPage() {
         Add
       </Button>
 
-      <Dialog open={scannerOpen} onClose={handleScannerClose}>
-        <DialogTitle>Scanner</DialogTitle>
-        <DialogContent>
-          <Scanner onSuccess={handleScannerSuccess} />
-          <Button onClick={handleManualEntryOpen}>Enter Manually</Button>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleScannerClose}>Close</Button>
-        </DialogActions>
-      </Dialog>
+      {scannerOpen && (
+        <div
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            padding: "5px",
+            width: "100%",
+            height: "100%",
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <div
+            style={{
+              position: "relative",
+              width: "100%",
+              border: "1px solid #ccc",
+              backgroundColor: "#fff",
+            }}
+          >
+            <Scanner
+              opened={scannerOpen}
+              onSuccess={(result) => {
+                handleScannerSuccess(result);
+              }}
+              onError={(error) => {
+                console.log(error);
+              }}
+            />
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                padding: "10px",
+              }}
+            >
+              <Button onClick={handleManualEntryOpen} variant="contained">
+                Manual input
+              </Button>
+              <Button onClick={handleScannerClose} variant="outlined">
+                Close
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <Dialog open={manualEntryOpen} onClose={handleManualEntryClose}>
-        <DialogTitle>Register New Product</DialogTitle>
+        <DialogTitle>New Product</DialogTitle>
         <DialogContent>
           <TextField
             label="Product ID"
