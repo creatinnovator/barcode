@@ -48,13 +48,19 @@ const Page = () => {
     if (
       dispatchItem.id &&
       dispatchItem.quantityToDispatch > 0 &&
+      dispatchItem.quantityToDispatch <= dispatchItem.quantity &&
       !quantityError
     ) {
       setValid(true);
     } else {
       setValid(false);
     }
-  }, [dispatchItem.id, dispatchItem.quantityToDispatch, quantityError]);
+  }, [
+    dispatchItem.id,
+    dispatchItem.quantity,
+    dispatchItem.quantityToDispatch,
+    quantityError,
+  ]);
 
   const handleScannerOpen = useCallback(() => setScannerOpen(true), []);
   const handleScannerClose = useCallback(() => setScannerOpen(false), []);
@@ -89,11 +95,14 @@ const Page = () => {
         }
       }
       if (name === "quantityToDispatch") {
-        if (parseInt(value, 10) < 1) {
+        const newValue = parseInt(value, 10);
+        if (newValue < 1 || newValue > item.quantity) {
           setQuantityError(true);
         } else {
           setQuantityError(false);
         }
+        setDispatchItem({ ...item, [name]: newValue });
+        return;
       }
       setDispatchItem({ ...item, [name]: value });
     },

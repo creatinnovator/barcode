@@ -64,11 +64,15 @@ export default function ItemsPage() {
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const { name, value } = e.target;
       if (name === "quantity") {
+        const newValue = parseInt(value, 10);
         if (parseInt(value, 10) < 1) {
           setQuantityError(true);
         } else {
           setQuantityError(false);
         }
+
+        setNewItem({ ...newItem, [name]: newValue });
+        return;
       }
       setNewItem({ ...newItem, [name]: value });
     },
@@ -81,12 +85,22 @@ export default function ItemsPage() {
     }
 
     setManualEntryOpen(false);
+
+    const existingItem = items.find((item) => item.id === newItem.id);
+    if (existingItem) {
+      existingItem.quantity += newItem.quantity;
+      return;
+    }
     items.push(newItem);
   }, [newItem, valid]);
 
   const handleScannerSuccess = useCallback((result: string) => {
-    setNewItem({ id: result, name: "", description: "", quantity: 1 });
-
+    const existingItem = items.find((item) => item.id === result);
+    if (existingItem) {
+      setNewItem({ ...existingItem, quantity: 1 });
+    } else {
+      setNewItem({ id: result, name: "", description: "", quantity: 1 });
+    }
     setScannerOpen(false);
     setManualEntryOpen(true);
   }, []);
